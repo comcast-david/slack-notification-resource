@@ -32,6 +32,19 @@ silent="$(jq -r '.params.silent // "false"' < "${payload}")"
 always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
 redact_hook="$(jq -r '.params.redact_hook_url // "true"' < "${payload}")"
 
+# If we have any proxy settings use those
+http_proxy="$(jq -r '.source.http_proxy // ""' < "${payload}")"
+https_proxy="$(jq -r '.source.https_proxy // ""' < "${payload}")"
+
+# setting http/s proxy environmental variables.
+# these are read by curl on execution and used to determine 
+# whether a request needs to be routed through a proxy server. 
+if [[ "$http_proxy" != "" ]]; then 
+  export http_proxy="$http_proxy"
+fi
+if [[ "$https_proxy" != "" ]]; then
+  export https_proxy="$https_proxy"
+fi
 
 cert_count="$(echo $raw_ca_certs | jq -r '. | length')"
 if [[ ${cert_count} -gt 0 ]]
